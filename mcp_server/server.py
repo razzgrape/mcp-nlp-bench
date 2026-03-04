@@ -47,7 +47,7 @@ def extract_ner(text: str) -> str:
     entities = _ner_extractor.extract_as_dicts(text)
     return json.dumps(entities, ensure_ascii=False, indent=2)
 
-mcp.tool()
+@mcp.tool()
 def pos_tag(text: str) -> str:
     """Определить части речи для каждого токена в русском тексте"""
     logger.info("pos_tag вызван, длина текста: %d", len(text))
