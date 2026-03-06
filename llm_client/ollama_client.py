@@ -213,11 +213,51 @@ class OllamaClient:
                 )
             )
 
+        if not tool_calls and content.strip():
+            parsed = OllamaClient._try_parse_tool_calls_from_text(content)
+            if parsed:
+                tool_calls = parsed
+                content = ""  
+
         return LLMResponse(
             content=content,
             tool_calls=tool_calls,
             raw=data,
         )
+
+    @staticmethod
+    def _try_parse_tool_calls_from_text(text: str) -> list[ToolCall]:
+        """Попытаться извлечь tool calls из текстового ответа"""
+        import json
+
+        text = text.strip()
+
+        try:
+            parsed = json.loads(text)
+        except json.JSONDecodeError:
+            return []
+
+        if isinstance(parsed, list):
+            calls = []
+            for item in parsed:
+                if isinstance(item, dict) and "name" in item:
+                    calls.append(
+                        ToolCall(
+                            name=item["name"],
+                            arguments=item.get("arguments", {}),
+                        )
+                    )
+            return calls
+
+        if isinstance(parsed, dict) and "name" in parsed:
+            return [
+                ToolCall(
+                    name=parsed["name"],
+                    arguments=parsed.get("arguments", {}),
+                )
+            ]
+
+        return []
     
     def close(self) -> None:
         """Закрыть HTTP-клиент."""
