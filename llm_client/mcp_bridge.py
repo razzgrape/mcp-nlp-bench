@@ -30,7 +30,7 @@ class McpBridge:
     '''Мост между LLM и NLP-tools'''
     
     def __init__(self, server_script: str | None = None,
-                 python_command: str = 'python') -> None:
+                 python_command: str = 'python3') -> None:
         self._server_script = server_script or str(Path(__file__).parent.parent/ "mcp_server" / "server.py")
         self._python_command = python_command
         self._session: ClientSession | None = None

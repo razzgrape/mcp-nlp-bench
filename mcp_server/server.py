@@ -12,10 +12,7 @@ from mcp_server.tools.pos_tagger import PosTagger
 logging.basicConfig(level = logging.INFO)
 logger = logging.getLogger(__name__)
 
-mcp = FastMCP(
-    'nlp-tools',
-    version = '0.1.0'
-)
+mcp = FastMCP("nlp-tools")
 
 _lemmatizer = Lemmatizer()
 _ner_extractor = NerExtractor()
