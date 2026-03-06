@@ -90,7 +90,7 @@ class PosTagger:
         ]
 
     @staticmethod
-    def _parse_feats(feats_str: str | None) -> dict[str, str]:
+    def _parse_feats(feats: str | dict | None) -> dict[str, str]:
         """Разобрать строку грамматических признаков.
 
         Args:
@@ -99,11 +99,13 @@ class PosTagger:
         Returns:
             Словарь признаков.
         """
-        if not feats_str:
+        if not feats:
             return {}
+        if isinstance(feats, dict):
+            return feats
 
         result = {}
-        for pair in feats_str.split("|"):
+        for pair in feats.split("|"):
             if "=" in pair:
                 key, value = pair.split("=", maxsplit=1)
                 result[key] = value
