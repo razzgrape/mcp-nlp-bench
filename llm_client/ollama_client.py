@@ -234,28 +234,47 @@ class OllamaClient:
 
         try:
             parsed = json.loads(text)
+            if isinstance(parsed, list) and parsed and "name" in parsed[0]:
+                return [
+                    ToolCall(name=item["name"], arguments=item.get("arguments", {}))
+                    for item in parsed
+                    if isinstance(item, dict) and "name" in item
+                ]
+            if isinstance(parsed, dict) and "name" in parsed:
+                return [ToolCall(name=parsed["name"], arguments=parsed.get("arguments", {}))]
         except json.JSONDecodeError:
-            return []
+            pass
 
-        if isinstance(parsed, list):
-            calls = []
-            for item in parsed:
-                if isinstance(item, dict) and "name" in item:
-                    calls.append(
-                        ToolCall(
-                            name=item["name"],
-                            arguments=item.get("arguments", {}),
-                        )
-                    )
-            return calls
-
-        if isinstance(parsed, dict) and "name" in parsed:
-            return [
-                ToolCall(
-                    name=parsed["name"],
-                    arguments=parsed.get("arguments", {}),
-                )
-            ]
+        start = text.find("[")
+        while start != -1:
+            depth = 0
+            for i in range(start, len(text)):
+                if text[i] == "[":
+                    depth += 1
+                elif text[i] == "]":
+                    depth -= 1
+                    if depth == 0:
+                        candidate = text[start : i + 1]
+                        try:
+                            parsed = json.loads(candidate)
+                            if (
+                                isinstance(parsed, list)
+                                and parsed
+                                and isinstance(parsed[0], dict)
+                                and "name" in parsed[0]
+                            ):
+                                return [
+                                    ToolCall(
+                                        name=item["name"],
+                                        arguments=item.get("arguments", {}),
+                                    )
+                                    for item in parsed
+                                    if isinstance(item, dict) and "name" in item
+                                ]
+                        except json.JSONDecodeError:
+                            pass
+                        break
+            start = text.find("[", start + 1)
 
         return []
     
